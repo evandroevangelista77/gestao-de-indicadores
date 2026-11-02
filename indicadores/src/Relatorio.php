@@ -191,7 +191,7 @@ class Relatorio
     private static function decisoes(RelatorioDoc $pdf, array $desvios): void
     {
         $y = $pdf->section(RelatorioDoc::TOP, 'Decisões que pedem a diretoria', 'As frentes mais urgentes, com responsável, prazo e o risco de não agir');
-        $top = array_slice($desvios, 0, 4);
+        $top = array_slice($desvios, 0, 3);
         if (!$top) {
             $y = $pdf->banner($y, 'Sem decisões pendentes', 'Nenhum indicador fora da meta neste período.', RelatorioDoc::OK);
         }
@@ -203,11 +203,11 @@ class Relatorio
                 'risco' => $d['risco'],
             ]);
         }
-        if (count($desvios) > 4) {
+        if (count($desvios) > 3) {
             $pdf->SetFont('dejavusans', 'I', 7.4);
             $pdf->ink(RelatorioDoc::MUTED);
             $pdf->SetXY(RelatorioDoc::X, $y);
-            $pdf->Cell(RelatorioDoc::W, 4, '+ ' . (count($desvios) - 4) . ' desvio(s) menos urgentes estão na matriz de prioridades (anexo).', 0, 1, 'L');
+            $pdf->Cell(RelatorioDoc::W, 4, '+ ' . (count($desvios) - 3) . ' desvio(s) menos urgentes estão na matriz de prioridades (anexo).', 0, 1, 'L');
             $y += 7;
         }
         self::roadmap($pdf, $desvios, $y + 2);
