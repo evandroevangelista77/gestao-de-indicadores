@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 class KpiImport
 {
     /** Palavras do nome que indicam "menor é melhor". */
-    private const MENOR_MELHOR = ['variação', 'variacao', 'desvio', 'devolvida', 'escalonamentos', 'reclamação', 'reclamacao', 'recorrência', 'recorrencia', 'reincidência', 'reincidencias', 'reincidências'];
+    private const MENOR_MELHOR = ['variação', 'variacao', 'desvio', 'devolvida', 'escalonamentos', 'reclamação', 'reclamacao', 'recorrência', 'recorrencia', 'reincidência', 'reincidencias', 'reincidências', 'backlog'];
 
     /** @return array{areas: int, criados: int, atualizados: int} */
     public static function arquivo(string $caminho): array
@@ -64,6 +64,7 @@ class KpiImport
             }
         }
         Motor::esquecer();
+        Meta::sync();
         return $stat;
     }
 

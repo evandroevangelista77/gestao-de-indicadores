@@ -33,6 +33,7 @@ class Menu
         }
         $items = [
             'painel'    => ['title' => 'Painel executivo', 'page' => self::page('/front/painel.php'), 'icon' => 'ti ti-layout-dashboard'],
+            'kpi'       => ['title' => "KPIs", 'page' => self::page('/front/kpi.php'), 'icon' => 'ti ti-target-arrow'],
             'auditoria' => ['title' => 'Auditorias', 'page' => self::page('/front/auditoria.php'), 'icon' => 'ti ti-clipboard-check'],
         ];
         if (Session::haveRight(self::$rightname, UPDATE)) {

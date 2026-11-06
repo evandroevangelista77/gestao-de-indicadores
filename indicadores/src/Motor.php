@@ -13,6 +13,7 @@ use GlpiPlugin\Indicadores\Coletor\Pmo;
 use GlpiPlugin\Indicadores\Coletor\Reembolso;
 use GlpiPlugin\Indicadores\Coletor\Rh;
 use GlpiPlugin\Indicadores\Coletor\Si;
+use GlpiPlugin\Indicadores\Coletor\Superintendencia;
 use Throwable;
 
 /**
@@ -26,7 +27,7 @@ class Motor
 {
     public const VALORES = 'glpi_plugin_indicadores_valores';
 
-    private const COLETORES = [Pmo::class, Si::class, Reembolso::class, Comercial::class, Ciclo::class, Eventos::class, Rh::class, Equip::class, Csat::class, Enps::class];
+    private const COLETORES = [Pmo::class, Si::class, Reembolso::class, Comercial::class, Ciclo::class, Eventos::class, Rh::class, Equip::class, Csat::class, Enps::class, Superintendencia::class];
 
     /** @var array<string, Coletor>|null */
     private static ?array $coletores = null;

@@ -3,6 +3,9 @@
 use GlpiPlugin\Indicadores\Area;
 use GlpiPlugin\Indicadores\Auditoria;
 use GlpiPlugin\Indicadores\Execucao;
+use GlpiPlugin\Indicadores\Kpi;
+use GlpiPlugin\Indicadores\KpiArea;
+use GlpiPlugin\Indicadores\KpiMotor;
 use GlpiPlugin\Indicadores\Menu;
 use GlpiPlugin\Indicadores\Meta;
 use GlpiPlugin\Indicadores\Motor;
@@ -46,6 +49,18 @@ function plugin_indicadores_install(): bool
         Area::KPIS => "`id` int $sign NOT NULL AUTO_INCREMENT, `plugin_indicadores_areas_id` $int, `name` varchar(255) DEFAULT NULL, `unit` varchar(8) NOT NULL DEFAULT 'n',
             `dir` varchar(6) NOT NULL DEFAULT 'info', `meta` decimal(16,4) DEFAULT NULL, `limite` decimal(16,4) DEFAULT NULL, `peso` tinyint NOT NULL DEFAULT 1, `position` int NOT NULL DEFAULT 0,
             PRIMARY KEY (`id`), KEY `area` (`plugin_indicadores_areas_id`)",
+        // painel de KPIs: a superintendência (raiz) e as áreas debaixo dela
+        KpiArea::getTable() => "`id` int $sign NOT NULL AUTO_INCREMENT, `name` varchar(255) DEFAULT NULL, `kind` varchar(6) NOT NULL DEFAULT 'area',
+            `meta` decimal(16,4) DEFAULT NULL, `position` int NOT NULL DEFAULT 0, `is_active` tinyint NOT NULL DEFAULT 1,
+            PRIMARY KEY (`id`), KEY `kind` (`kind`)",
+        // KPIs de cada área: meta, peso, frequência (mensal, quadrimestral ou anual) e direção
+        Kpi::getTable() => "`id` int $sign NOT NULL AUTO_INCREMENT, `plugin_indicadores_kpiareas_id` $int, `name` varchar(255) DEFAULT NULL, `unit` varchar(8) NOT NULL DEFAULT '%',
+            `dir` varchar(6) NOT NULL DEFAULT 'up', `meta` decimal(16,4) DEFAULT NULL, `peso` int NOT NULL DEFAULT 0, `freq` varchar(14) NOT NULL DEFAULT 'mensal',
+            `note` varchar(255) DEFAULT NULL, `position` int NOT NULL DEFAULT 0, `is_active` tinyint NOT NULL DEFAULT 1,
+            PRIMARY KEY (`id`), KEY `area` (`plugin_indicadores_kpiareas_id`)",
+        // valores lançados de cada KPI por mês
+        KpiMotor::VALORES => "`id` int $sign NOT NULL AUTO_INCREMENT, `plugin_indicadores_kpis_id` $int, `period` char(7) NOT NULL, `value` decimal(18,4) DEFAULT NULL, `date_mod` datetime DEFAULT NULL,
+            PRIMARY KEY (`id`), UNIQUE KEY `kpi_period` (`plugin_indicadores_kpis_id`, `period`)",
         // execuções: período avaliado, nota e achados
         Execucao::getTable() => "`id` int $sign NOT NULL AUTO_INCREMENT, `plugin_indicadores_auditorias_id` $int, `name` varchar(255) DEFAULT NULL,
             `area` varchar(30) NOT NULL DEFAULT 'all', `frequency` varchar(12) DEFAULT NULL, `period_from` date DEFAULT NULL, `period_to` date DEFAULT NULL,
@@ -123,10 +138,10 @@ function plugin_indicadores_install(): bool
 function plugin_indicadores_uninstall(): bool
 {
     global $DB;
-    foreach ([Execucao::getTable(), Auditoria::getTable(), Area::KPIS, Area::getTable(), Motor::VALORES, Meta::getTable()] as $table) {
+    foreach ([Execucao::getTable(), Auditoria::getTable(), KpiMotor::VALORES, Kpi::getTable(), KpiArea::getTable(), Area::KPIS, Area::getTable(), Motor::VALORES, Meta::getTable()] as $table) {
         $DB->dropTable($table, true);
     }
-    $DB->delete('glpi_logs', ['itemtype' => [Auditoria::class, Execucao::class, Meta::class, Area::class]]);
+    $DB->delete('glpi_logs', ['itemtype' => [Auditoria::class, Execucao::class, Meta::class, Area::class, Kpi::class, KpiArea::class]]);
     ProfileRight::deleteProfileRights([Menu::$rightname]);
     Config::deleteConfigurationValues(Menu::CONFIG_CONTEXT, array_keys(Menu::DEFAULTS));
     CronTask::unregister('indicadores');

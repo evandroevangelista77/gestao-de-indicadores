@@ -12,10 +12,12 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Indicadores\Area;
 use GlpiPlugin\Indicadores\Auditoria;
 use GlpiPlugin\Indicadores\Execucao;
+use GlpiPlugin\Indicadores\Kpi;
+use GlpiPlugin\Indicadores\KpiArea;
 use GlpiPlugin\Indicadores\Menu;
 use GlpiPlugin\Indicadores\Meta;
 
-define('PLUGIN_INDICADORES_VERSION', '1.2.0');
+define('PLUGIN_INDICADORES_VERSION', '1.3.0');
 define('PLUGIN_INDICADORES_MIN_GLPI', '11.0.0');
 define('PLUGIN_INDICADORES_MAX_GLPI', '12.0.99');
 
@@ -27,6 +29,8 @@ function plugin_init_indicadores(): void
     Plugin::registerClass(Execucao::class);
     Plugin::registerClass(Meta::class);
     Plugin::registerClass(Area::class);
+    Plugin::registerClass(Kpi::class);
+    Plugin::registerClass(KpiArea::class);
 
     // sessões abertas antes da instalação ainda não têm o direito do plugin
     if (isset($_SESSION['glpiactiveprofile']['id']) && !isset($_SESSION['glpiactiveprofile'][Menu::$rightname])) {
