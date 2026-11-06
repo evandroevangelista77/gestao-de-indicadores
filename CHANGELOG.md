@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+- **Coleta automática dos KPIs por área** (Configuração → Coleta automática): para cada área, escopo dos chamados (entidade com as filhas, grupo e categoria) e, para cada KPI, a fonte do valor: chamados solucionados no prazo (geral, incidentes e requisições), avaliação positiva e negativa dos chamados e dos projetos, tarefas de projeto no prazo, fases do Ciclo Financeiro dentro do SLO e devolvidas, KPIs lançados no prazo e SLI do Zabbix.
+- Sugestão automática de fontes pelo nome dos KPIs, coleta a cada 6 horas e botões "Coletar agora".
+- Valor lançado à mão tem prioridade sobre o automático; a planilha marca os valores automáticos.
+
 ## 1.3.0
 - Menu **KPIs**: painel de KPIs por área debaixo da Superintendência. Cada área tem a planilha mensal com peso, meta, frequência (mensal, quadrimestral ou anual) e o realizado de cada mês, com atingimento, semáforo e resultado ponderado; a aba Consolidado mostra todas as áreas e a superintendência.
 - Importação da planilha do painel (Nome, Nome Indicador, Meta, Peso, Frequência, Observação, uma aba por área), repetível sem perder os valores lançados.

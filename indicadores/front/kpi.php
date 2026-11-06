@@ -47,16 +47,29 @@ if ($canEdit && isset($_POST['salvar_valores'])) {
         if (!$kpi->getFromDB((int) $kid) || (int) $kpi->fields['plugin_indicadores_kpiareas_id'] !== $areaId) {
             continue;
         }
+        $atuais = KpiMotor::valores([(int) $kid], array_keys((array) $meses));
         foreach ((array) $meses as $ym => $raw) {
             if (!Periodo::mesValido($ym) || !KpiMotor::aplica($kpi->fields, (int) substr($ym, 5, 2))) {
                 continue;
             }
-            KpiMotor::salvar((int) $kid, $ym, KpiMotor::numero($raw));
+            $novo = KpiMotor::numero($raw);
+            $antigo = $atuais[(int) $kid][$ym] ?? null;
+            // a tela reenvia todas as células (inclusive as automáticas): só grava o que foi alterado
+            if (($novo === null && $antigo === null) || ($novo !== null && $antigo !== null && abs($novo - $antigo) < 0.00005)) {
+                continue;
+            }
+            if ($novo === null) {
+                // célula apagada: volta ao automático (se o KPI tiver fonte) ou fica sem valor
+                $DB->delete(KpiMotor::VALORES, ['plugin_indicadores_kpis_id' => (int) $kid, 'period' => $ym]);
+            } else {
+                KpiMotor::salvar((int) $kid, $ym, $novo, 'manual');
+            }
             $n++;
         }
     }
+    \GlpiPlugin\Indicadores\KpiColeta::coletar(date('Y-m'), $areaId); // células apagadas voltam ao automático
     \GlpiPlugin\Indicadores\Motor::garantir(date('Y-m'), true);
-    Session::addMessageAfterRedirect('Valores salvos. O painel executivo já reflete os lançamentos.');
+    Session::addMessageAfterRedirect($n ? "$n valor(es) salvo(s). O painel executivo já reflete os lançamentos." : 'Nenhuma alteração para salvar.');
     Html::redirect($self());
 }
 if ($canEdit && isset($_POST['kpi_salvar'])) {
@@ -174,11 +187,12 @@ foreach ($areas as $a) {
 if ($area) {
     $kpis = KpiMotor::kpis($areaId, false);
     $valores = $d['valores'];
+    $origens = KpiMotor::origens(array_map('intval', array_column($kpis, 'id')), $d['meses']);
     $res = $d['resultados'][$areaId] ?? [];
     $pesoTotal = array_sum(array_map(fn ($k) => $k['is_active'] ? (int) $k['peso'] : 0, $kpis));
     $acum = KpiMotor::acumulado($res);
     echo "<form method='post' class='card ind-gridcard'>" . Menu::csrf() . "<input type='hidden' name='ano' value='$ano'><input type='hidden' name='area' value='$areaId'>";
-    echo "<div class='card-header'><h3 class='card-title'>" . $e($area['name']) . "</h3><div class='ms-auto small text-secondary'>Peso total ativo: <b>$pesoTotal</b> · acumulado: <b>" . ($acum === null ? '—' : $e(number_format($acum, 1, ',', '.')) . '%') . "</b></div></div>";
+    echo "<div class='card-header'><h3 class='card-title'>" . $e($area['name']) . "</h3><div class='ms-auto small text-secondary'>" . (Session::haveRight('config', UPDATE) ? "<a class='me-3' href='" . $e(Menu::url('/front/config.php#kpi-' . $areaId)) . "'><i class='ti ti-bolt'></i>Configurar coleta</a>" : '') . "Peso total ativo: <b>$pesoTotal</b> · acumulado: <b>" . ($acum === null ? '—' : $e(number_format($acum, 1, ',', '.')) . '%') . "</b></div></div>";
     echo "<div class='table-responsive'><table class='ind-ktable'><thead><tr><th class='ind-kname'>KPI</th><th>Peso</th><th>Meta</th><th>Freq.</th>";
     for ($m = 1; $m <= 12; $m++) {
         echo "<th>" . $e(Periodo::mesCurto($m)) . "</th>";
@@ -187,7 +201,8 @@ if ($area) {
     foreach ($kpis as $k) {
         $kid = (int) $k['id'];
         $dir = $k['dir'] === 'down' ? '↓ menor é melhor' : '↑ maior é melhor';
-        echo "<tr" . (!$k['is_active'] ? " class='text-secondary'" : '') . "><td class='ind-kname'><b>" . $e($k['name']) . "</b><small>" . $e($dir) . ($k['peso'] ? '' : ' · acompanhamento (peso 0)') . "</small></td>"
+        $fonteTxt = !empty($k['source']) ? ' · <i class="ti ti-bolt"></i> ' . $e(\GlpiPlugin\Indicadores\Fontes::rotulo($k['source'])) : '';
+        echo "<tr" . (!$k['is_active'] ? " class='text-secondary'" : '') . "><td class='ind-kname'><b>" . $e($k['name']) . "</b><small>" . $e($dir) . ($k['peso'] ? '' : ' · acompanhamento (peso 0)') . $fonteTxt . "</small></td>"
             . "<td class='ind-kmeta'>" . (int) $k['peso'] . "</td><td class='ind-kmeta'>" . ($k['meta'] === null ? '—' : $e(rtrim(rtrim(number_format((float) $k['meta'], 2, ',', ''), '0'), ',')) . ($k['unit'] === '%' ? '%' : '')) . "</td>"
             . "<td class='ind-kmeta'><small>" . $e(Kpi::FREQUENCIAS[$k['freq']] ?? $k['freq']) . "</small></td>";
         foreach ($d['meses'] as $ym) {
@@ -197,12 +212,13 @@ if ($area) {
                 continue;
             }
             $v = $valores[$kid][$ym] ?? null;
+            $auto = $v !== null && ($origens[$kid][$ym] ?? 'manual') === 'auto';
             $at = KpiMotor::atingimento($k, $v);
             $txt = $v === null ? '' : rtrim(rtrim(number_format($v, 2, ',', ''), '0'), ',');
             if ($canEdit && $ym <= $hoje) {
-                echo "<td class='ind-kcell ind-" . $e(KpiMotor::status($at)) . "' title='" . ($at === null ? 'Sem lançamento' : 'Atingimento ' . $e(number_format($at, 1, ',', '.')) . '%') . "'><input name='v[$kid][$ym]' value='" . $e($txt) . "' inputmode='decimal'></td>";
+                echo "<td class='ind-kcell ind-" . $e(KpiMotor::status($at)) . ($auto ? ' ind-auto' : '') . "' title='" . ($at === null ? 'Sem lançamento' : ($auto ? 'Coletado automaticamente · ' : '') . 'Atingimento ' . $e(number_format($at, 1, ',', '.')) . '%') . "'><input name='v[$kid][$ym]' value='" . $e($txt) . "' inputmode='decimal'></td>";
             } else {
-                echo "<td class='ind-kcell ind-" . $e(KpiMotor::status($at)) . "' title='" . ($at === null ? 'Sem lançamento' : 'Atingimento ' . $e(number_format($at, 1, ',', '.')) . '%') . "'>" . ($txt === '' ? '—' : $e($txt)) . "</td>";
+                echo "<td class='ind-kcell ind-" . $e(KpiMotor::status($at)) . ($auto ? ' ind-auto' : '') . "' title='" . ($at === null ? 'Sem lançamento' : ($auto ? 'Coletado automaticamente · ' : '') . 'Atingimento ' . $e(number_format($at, 1, ',', '.')) . '%') . "'>" . ($txt === '' ? '—' : $e($txt)) . "</td>";
             }
         }
         echo "<td class='text-end'>" . ($canEdit ? "<a class='btn btn-sm btn-ghost-secondary' href='" . $e($self(['kpi' => $kid])) . "#editar' title='Editar'><i class='ti ti-pencil'></i></a>" : '') . "</td></tr>";
@@ -213,7 +229,7 @@ if ($area) {
     }
     echo "<td></td></tr></tbody></table></div>";
     echo "<div class='card-footer d-flex flex-wrap align-items-center gap-3'><div class='ind-legend p-0 flex-grow-1'><span><i class='ind-dot ind-ok'></i> Atingimento ≥ 100%</span><span><i class='ind-dot ind-warn'></i> 90 a 99%</span><span><i class='ind-dot ind-bad'></i> Abaixo de 90%</span>"
-        . "<span class='text-secondary'>Quadrimestral: abril, agosto e dezembro · Anual: dezembro</span></div>"
+        . "<span><i class='ti ti-bolt'></i> Valor coletado automaticamente</span><span class='text-secondary'>Quadrimestral: abril, agosto e dezembro · Anual: dezembro</span></div>"
         . ($canEdit ? "<button class='btn btn-primary' name='salvar_valores' value='1'><i class='ti ti-device-floppy me-1'></i>Salvar valores</button>" : '') . "</div></form>";
 
     if ($canEdit) {

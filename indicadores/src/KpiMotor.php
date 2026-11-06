@@ -64,10 +64,25 @@ class KpiMotor
         return $out;
     }
 
-    public static function salvar(int $kpiId, string $ym, ?float $valor): void
+    /** Grava o valor de um KPI no mês. origem "manual" (lançado na tela) ou "auto" (coleta automática). */
+    public static function salvar(int $kpiId, string $ym, ?float $valor, string $origem = 'manual'): void
     {
         global $DB;
-        $DB->updateOrInsert(self::VALORES, ['value' => $valor, 'date_mod' => date('Y-m-d H:i:s')], ['plugin_indicadores_kpis_id' => $kpiId, 'period' => $ym]);
+        $DB->updateOrInsert(self::VALORES, ['value' => $valor, 'origin' => $origem, 'date_mod' => date('Y-m-d H:i:s')], ['plugin_indicadores_kpis_id' => $kpiId, 'period' => $ym]);
+    }
+
+    /** Origem de cada valor: kpi => mês => "manual" ou "auto". */
+    public static function origens(array $kpiIds, array $meses): array
+    {
+        global $DB;
+        $out = [];
+        if (!$kpiIds || !$meses) {
+            return $out;
+        }
+        foreach ($DB->request(['SELECT' => ['plugin_indicadores_kpis_id', 'period', 'origin'], 'FROM' => self::VALORES, 'WHERE' => ['plugin_indicadores_kpis_id' => $kpiIds, 'period' => $meses]]) as $r) {
+            $out[(int) $r['plugin_indicadores_kpis_id']][$r['period']] = $r['origin'];
+        }
+        return $out;
     }
 
     public static function aplica(array $kpi, int $mes): bool

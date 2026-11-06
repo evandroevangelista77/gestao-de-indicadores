@@ -65,6 +65,7 @@ class KpiImport
         }
         Motor::esquecer();
         Meta::sync();
+        KpiColeta::sugerir();
         return $stat;
     }
 
@@ -76,7 +77,13 @@ class KpiImport
             $DB->update(KpiArea::getTable(), ['meta' => $meta ?? $existente['meta']], ['id' => $existente['id']]);
             return (int) $existente['id'];
         }
-        $DB->insert(KpiArea::getTable(), ['name' => $nome, 'kind' => $tipo, 'position' => $ordem, 'meta' => $meta, 'is_active' => 1]);
+        // Sistemas Internos já tem um escopo de chamados: o do plugin Sistemas Internos, quando configurado
+        $escopo = null;
+        if ($tipo === 'area' && mb_strtolower($nome) === 'sistemas internos') {
+            $cfg = \Config::getConfigurationValues('plugin:sistemasinternos', ['entities_id']);
+            $escopo = isset($cfg['entities_id']) ? (int) $cfg['entities_id'] : null;
+        }
+        $DB->insert(KpiArea::getTable(), ['name' => $nome, 'kind' => $tipo, 'position' => $ordem, 'meta' => $meta, 'is_active' => 1, 'entities_id' => $escopo]);
         return (int) $DB->insertId();
     }
 

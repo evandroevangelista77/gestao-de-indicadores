@@ -74,6 +74,21 @@ function plugin_indicadores_install(): bool
         }
     }
 
+    // 1.4.0: coleta automática dos KPIs (escopo da área, fonte de cada KPI e origem de cada valor)
+    $add = function (string $table, string $field, string $def) use ($DB): void {
+        if ($DB->tableExists($table) && !$DB->fieldExists($table, $field)) {
+            $DB->doQuery("ALTER TABLE `$table` ADD `$field` $def");
+        }
+    };
+    $add(KpiArea::getTable(), 'entities_id', 'int ' . $sign . ' DEFAULT NULL');
+    $add(KpiArea::getTable(), 'groups_id', "int $sign NOT NULL DEFAULT 0");
+    $add(KpiArea::getTable(), 'itilcategories_id', "int $sign NOT NULL DEFAULT 0");
+    $add(KpiArea::getTable(), 'auto', 'tinyint NOT NULL DEFAULT 1');
+    $add(KpiArea::getTable(), 'date_collect', 'datetime DEFAULT NULL');
+    $add(Kpi::getTable(), 'source', 'varchar(30) DEFAULT NULL');
+    $add(Kpi::getTable(), 'source_param', 'varchar(120) DEFAULT NULL');
+    $add(KpiMotor::VALORES, 'origin', "varchar(6) NOT NULL DEFAULT 'manual'");
+
     Meta::sync();
 
     // configuração (só o que ainda não foi gravado)
@@ -107,6 +122,11 @@ function plugin_indicadores_install(): bool
 
     CronTask::register(Rotina::class, 'indicadoresfoto', 6 * HOUR_TIMESTAMP, [
         'comment' => 'Indicadores: grava a foto do mês corrente e do anterior',
+        'mode'    => CronTask::MODE_INTERNAL,
+        'state'   => CronTask::STATE_WAITING,
+    ]);
+    CronTask::register(Rotina::class, 'indicadoreskpi', 6 * HOUR_TIMESTAMP, [
+        'comment' => 'Indicadores: coleta automática dos KPIs por área (mês corrente e anterior)',
         'mode'    => CronTask::MODE_INTERNAL,
         'state'   => CronTask::STATE_WAITING,
     ]);

@@ -146,3 +146,8 @@
 .ind-kcell input:focus { outline: 2px solid var(--tblr-primary, #3b82f6); background: var(--tblr-bg-surface); }
 .ind-ktotal .ind-kcell { height: 50px; border-width: 2px; font-size: .95rem; }
 .ind-kcell.ind-total { border-width: 2px; }
+
+/* valor coletado automaticamente */
+.ind-kcell.ind-auto { position: relative; }
+.ind-kcell.ind-auto::after { content: ''; position: absolute; top: 4px; right: 5px; width: 6px; height: 6px; border-radius: 50%; background: var(--tblr-primary, #3b82f6); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tblr-primary, #3b82f6) 25%, transparent); }
+.ind-kname small .ti-bolt { color: var(--tblr-primary, #3b82f6); }

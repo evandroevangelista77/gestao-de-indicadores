@@ -18,6 +18,7 @@ class Rotina extends CommonGLPI
     {
         return match ($name) {
             'indicadoresfoto'      => ['description' => 'Indicadores: grava a foto do mês corrente e do anterior'],
+            'indicadoreskpi'       => ['description' => 'Indicadores: coleta automática dos KPIs por área'],
             'indicadoresauditoria' => ['description' => 'Indicadores: executa as auditorias programadas que venceram'],
             default                => [],
         };
@@ -26,6 +27,17 @@ class Rotina extends CommonGLPI
     public static function cronIndicadoresfoto(CronTask $task): int
     {
         $task->addVolume(Motor::recalcular(2));
+        return 1;
+    }
+
+    public static function cronIndicadoreskpi(CronTask $task): int
+    {
+        $n = 0;
+        foreach ([date('Y-m'), date('Y-m', strtotime('first day of last month'))] as $ym) {
+            $n += KpiColeta::coletar($ym)['preenchidos'];
+        }
+        Motor::recalcularArea('so', 2);
+        $task->addVolume($n);
         return 1;
     }
 

@@ -17,7 +17,7 @@ use GlpiPlugin\Indicadores\KpiArea;
 use GlpiPlugin\Indicadores\Menu;
 use GlpiPlugin\Indicadores\Meta;
 
-define('PLUGIN_INDICADORES_VERSION', '1.3.0');
+define('PLUGIN_INDICADORES_VERSION', '1.4.0');
 define('PLUGIN_INDICADORES_MIN_GLPI', '11.0.0');
 define('PLUGIN_INDICADORES_MAX_GLPI', '12.0.99');
 
