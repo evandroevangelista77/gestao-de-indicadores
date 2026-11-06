@@ -3,7 +3,7 @@
 /**
  * Plugin "Indicadores" para GLPI 11 e 12.
  *
- * Reúne os indicadores de qualidade dos departamentos (PMO, Sistemas Internos, Reembolso, Ciclo
+ * Reúne os indicadores de qualidade dos departamentos (PMO, Sistemas Internos, Reembolso, Comercial, Ciclo
  * Financeiro, Eventos, RH, Equipamentos, CSAT e e-NPS) num painel executivo mês a mês e executa
  * auditorias programadas (quinzenal, mensal, bimestral, trimestral, semestral e anual).
  */
@@ -15,7 +15,7 @@ use GlpiPlugin\Indicadores\Execucao;
 use GlpiPlugin\Indicadores\Menu;
 use GlpiPlugin\Indicadores\Meta;
 
-define('PLUGIN_INDICADORES_VERSION', '1.1.0');
+define('PLUGIN_INDICADORES_VERSION', '1.2.0');
 define('PLUGIN_INDICADORES_MIN_GLPI', '11.0.0');
 define('PLUGIN_INDICADORES_MAX_GLPI', '12.0.99');
 

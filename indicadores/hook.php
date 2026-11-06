@@ -106,6 +106,13 @@ function plugin_indicadores_install(): bool
         // na atualização o histórico já existe: só as áreas novas precisam de cálculo
         if (!countElementsInTable(Motor::VALORES)) {
             Motor::recalcular(12);
+        } else {
+            // atualização: calcula o histórico das áreas que ainda não têm nenhuma foto
+            foreach (Motor::disponiveis() as $area => $c) {
+                if (!countElementsInTable(Motor::VALORES, ['code' => ['LIKE', $area . '.%']])) {
+                    Motor::recalcularArea($area, 12);
+                }
+            }
         }
     } catch (Throwable $e) {
         trigger_error('Indicadores: histórico inicial não calculado: ' . $e->getMessage(), E_USER_WARNING);

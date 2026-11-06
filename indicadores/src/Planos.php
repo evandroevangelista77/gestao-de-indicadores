@@ -13,6 +13,18 @@ class Planos
 
     /** código do indicador => [risco, [causas], [ações], responsável sugerido] */
     private const BASE = [
+        'comercial.conversao' => ['Conversão baixa significa esforço comercial sem retorno e previsão de receita menos confiável.',
+            ['Oportunidades pouco qualificadas entrando no funil', 'Propostas sem acompanhamento até a decisão do cliente'],
+            ['Revisar os critérios de qualificação e descartar cedo o que não tem aderência', 'Analisar os motivos de perda e ajustar proposta, preço e argumento', 'Definir cadência de acompanhamento das propostas enviadas'], 'Gestão comercial'],
+        'comercial.ciclo' => ['Ciclo de venda longo adia a receita e consome capacidade da equipe comercial e de pré-venda.',
+            ['Etapas de pré-venda e orçamento com tempo parado', 'Decisão do cliente sem próximo passo combinado'],
+            ['Mapear o tempo médio por etapa do funil e atacar a mais lenta', 'Exigir próximo passo e data em toda oportunidade aberta', 'Padronizar modelos de proposta e orçamento para reduzir a elaboração'], 'Gestão comercial e pré-venda'],
+        'comercial.paradas' => ['Oportunidades paradas esfriam e tendem a ser perdidas para a concorrência.',
+            ['Falta de rotina de acompanhamento pelo atendente', 'Retorno do cliente pendente sem cobrança'],
+            ['Definir a regra: oportunidade sem movimentação há 7 dias recebe contato e novo prazo', 'Reatribuir ou encerrar as que não têm responsável ativo', 'Revisar o funil semanalmente no comitê comercial'], 'Gestão comercial'],
+        'comercial.prazos' => ['Prazo de edital ou proposta vencido pode significar perda definitiva da oportunidade.',
+            ['Prazos não monitorados pela equipe', 'Documentação de habilitação ou proposta atrasada'],
+            ['Priorizar hoje as oportunidades com prazo vencido: confirmar se ainda cabe participação', 'Registrar todos os prazos no CRM com alerta antecipado', 'Escalar à gestão os casos que dependem de documentação de outras áreas'], 'Gestão comercial e jurídico'],
         'pmo.prazo' => ['Atrasos recorrentes corroem a previsibilidade das entregas e a credibilidade do PMO.',
             ['Estimativas otimistas e sem reserva de contingência', 'Dependências entre tarefas sem gestão e replanejamentos sem registro'],
             ['Revisar as tarefas vencidas e replanejar com data de comprometimento aprovada pelo gerente do projeto', 'Instituir revisão semanal de prazos com escalonamento das tarefas a 3 dias do vencimento', 'Registrar a causa-raiz de cada atraso e ajustar a contingência dos próximos planos'], 'Gerente do PMO'],

@@ -3,6 +3,7 @@
 namespace GlpiPlugin\Indicadores;
 
 use GlpiPlugin\Indicadores\Coletor\Ciclo;
+use GlpiPlugin\Indicadores\Coletor\Comercial;
 use GlpiPlugin\Indicadores\Coletor\Coletor;
 use GlpiPlugin\Indicadores\Coletor\Csat;
 use GlpiPlugin\Indicadores\Coletor\Enps;
@@ -25,7 +26,7 @@ class Motor
 {
     public const VALORES = 'glpi_plugin_indicadores_valores';
 
-    private const COLETORES = [Pmo::class, Si::class, Reembolso::class, Ciclo::class, Eventos::class, Rh::class, Equip::class, Csat::class, Enps::class];
+    private const COLETORES = [Pmo::class, Si::class, Reembolso::class, Comercial::class, Ciclo::class, Eventos::class, Rh::class, Equip::class, Csat::class, Enps::class];
 
     /** @var array<string, Coletor>|null */
     private static ?array $coletores = null;
