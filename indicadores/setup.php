@@ -25,6 +25,9 @@ function plugin_init_indicadores(): void
 {
     global $PLUGIN_HOOKS;
 
+    // aba do plugin em Administração → Perfis
+    Plugin::registerClass(GlpiPlugin\Indicadores\ProfileTab::class, ['addtabon' => [Profile::class]]);
+
     Plugin::registerClass(Auditoria::class);
     Plugin::registerClass(Execucao::class);
     Plugin::registerClass(Meta::class);
